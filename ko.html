@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Elections simulator</title>
+        <script src="phaser.js"></script>
+    </head>
+    <body>
+    <script type="text/javascript">
+
+    window.onload = function() {
+				emissionProbabilityPerSecond = 2;
+				horizontalSpeedBounds = 100;
+				syncTime=0;
+				lastTime=-1;
+        var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+				function preload() {
+					game.load.image('background', 'assets/background.png');
+					game.load.image('check', 'assets/check.png');
+					game.load.image('onepixel', 'assets/onepixel.png');
+					
+					game.load.image('player', 'assets/player.png');
+					
+					game.load.image('pitun', 'assets/pitun.png');
+					game.load.image('grudinin', 'assets/grudinin.png');
+					game.load.image('zhirik', 'assets/zhirik.png');
+					game.load.image('javlinsky', 'assets/javlinsky.png');
+					game.load.image('titoff', 'assets/titoff.png');
+					game.load.image('surajkin', 'assets/surajkin.png');
+					game.load.image('loshad', 'assets/loshad.png');
+					game.load.image('baburin', 'assets/baburin.png');
+					game.load.image('sarcasm', 'assets/sarcasm.jpg');
+				}
+
+				function create() {
+					cursors = game.input.keyboard.createCursorKeys();
+					game.add.sprite(0,0, 'background');
+					game.physics.startSystem(Phaser.Physics.ARCADE);
+					
+					platforms = game.add.group();
+					platforms.enableBody = true;
+					ground = platforms.create(0,game.world.height-1,'onepixel');
+					ground.scale.setTo(game.world.width,1);
+					ground.body.immovable = true;
+					
+					checks = game.add.group();
+					checks.enableBody = true;
+					
+					player=game.add.sprite(250, 500, 'player');
+					player.scale.setTo(0.3,0.3);
+					game.physics.arcade.enable(player);
+					player.body.bounce.y = 0.2;
+					player.body.gravity.y = 300;
+					player.body.collideWorldBounds = true;
+					
+					bots=game.add.group();
+					checks.enableBody = true;
+					
+					botsArray = [];
+					pitun=bots.create(700, 500, 'pitun');
+					pitun.scale.setTo(0.38,0.38);
+					botsArray.push(pitun);
+					
+					grudinin=bots.create(500, 500, 'grudinin');
+					grudinin.scale.setTo(0.6,0.6);
+					botsArray.push(grudinin);
+					
+					zhirik=bots.create(300, 500, 'zhirik');
+					zhirik.scale.setTo(0.5,0.5);
+					botsArray.push(zhirik);
+					
+					javlinsky=bots.create(400, 500, 'javlinsky');
+					javlinsky.scale.setTo(0.5,0.5);
+					botsArray.push(javlinsky);
+					
+					titoff=bots.create(600, 500, 'titoff');
+					titoff.scale.setTo(0.5,0.5);
+					botsArray.push(titoff);
+					
+					loshad=bots.create(200, 500, 'loshad');
+					loshad.scale.setTo(0.3,0.3);
+					botsArray.push(loshad);
+					
+					surajkin=bots.create(550, 500, 'surajkin');
+					surajkin.scale.setTo(0.6,0.6);
+					botsArray.push(surajkin);
+					
+					baburin=bots.create(750, 500, 'baburin');
+					baburin.scale.setTo(0.5,0.5);
+					botsArray.push(baburin);
+					
+					for (i =0;i<botsArray.length;i++ ){
+						game.physics.arcade.enable(botsArray[i]);
+						botsArray[i].body.bounce.x = 1.0;
+						botsArray[i].body.gravity.y = 300;
+						botsArray[i].body.velocity.x=300*(0.3*Math.random()+0.7);
+						if(Math.random()>0.5)
+							botsArray[i].body.velocity.x=-botsArray[i].body.velocity.x;
+						botsArray[i].body.collideWorldBounds = true;
+					}
+					scoreText = game.add.text(8, 8, 'time: 0:59', { fontSize: '16px', fill: '#050' });
+				}
+
+				function update() {
+					var newTime=game.time.totalElapsedSeconds();
+					if (lastTime >= 0){
+						syncTime += (newTime-lastTime);
+						if(Math.random()/emissionProbabilityPerSecond<(newTime-lastTime)){
+							var newCheck=checks.create((game.world.width-100)*Math.random(),0,'check');
+							newCheck.body.bounce.x = 0.8;
+							newCheck.body.gravity.y = 300;
+							newCheck.body.collideWorldBounds = true;
+							newCheck.body.velocity.x=(Math.random()*2-1)*horizontalSpeedBounds;
+						}
+					}
+					lastTime=newTime;
+					if(Math.floor(60-syncTime)>=10)
+						scoreText.text='time: 0:'+Math.floor((60-syncTime)*1000)/1000
+					else if(60-syncTime>0)
+						scoreText.text='time: 0:0'+Math.floor((60-syncTime)*1000)/1000
+					else {
+						bots.kill()
+						player.kill();
+						checks.kill();
+						platforms.kill();
+						scoreText.kill();
+						game.add.text(60, 5, 'Результаты:', { fontSize: '25px', fill: '#000' });
+						game.add.text(20, 40, 'Путин:', { fontSize: '20px', fill: '#000' });
+						game.add.text(20, 80, 'Грудинин:', { fontSize: '20px', fill: '#000' });
+						game.add.text(20, 120, 'Жириновский:', { fontSize: '20px', fill: '#000' });
+						game.add.text(20, 160, 'Явлинский:', { fontSize: '20px', fill: '#000' });
+						game.add.text(20, 200, 'Сурайкин:', { fontSize: '20px', fill: '#000' });
+						game.add.text(20, 240, 'Титов:', { fontSize: '20px', fill: '#000' });
+						game.add.text(20, 280, 'Собчак:', { fontSize: '20px', fill: '#000' });
+						game.add.text(20, 320, 'Бабурин:', { fontSize: '20px', fill: '#000' });
+						game.add.text(20, 360, 'Итого:', { fontSize: '20px', fill: '#000' });
+						game.add.text(200, 40,  '84%', { fontSize: '20px', fill: '#000' });
+						game.add.text(200, 80,  '16%', { fontSize: '20px', fill: '#000' });
+						game.add.text(200, 120, '12%', { fontSize: '20px', fill: '#000' });
+						game.add.text(200, 160, '9%', { fontSize: '20px', fill: '#000' });
+						game.add.text(200, 200, '8%', { fontSize: '20px', fill: '#000' });
+						game.add.text(200, 240, '8%', { fontSize: '20px', fill: '#000' });
+						game.add.text(200, 280, '6%', { fontSize: '20px', fill: '#000' });
+						game.add.text(200, 320, '3%', { fontSize: '20px', fill: '#000' });
+						game.add.text(200, 360, '146%', { fontSize: '20px', fill: '#000' });
+						
+						
+						game.add.text(460, 5, 'Highscores:', { fontSize: '25px', fill: '#000' });
+						game.add.text(420, 40, 'Путин:', { fontSize: '20px', fill: '#000' });
+						game.add.text(420, 80, 'Путин:', { fontSize: '20px', fill: '#000' });
+						game.add.text(420, 120, 'Путин:', { fontSize: '20px', fill: '#000' });
+						game.add.text(420, 160, 'Путин:', { fontSize: '20px', fill: '#000' });
+						game.add.text(420, 200, 'Путин:', { fontSize: '20px', fill: '#000' });
+						game.add.text(420, 240, 'Путин:', { fontSize: '20px', fill: '#000' });
+						game.add.text(420, 280, 'Путин:', { fontSize: '20px', fill: '#000' });
+						game.add.text(420, 320, 'Путин:', { fontSize: '20px', fill: '#000' });
+						game.add.text(420, 360, 'Путин:', { fontSize: '20px', fill: '#000' });
+						game.add.text(600, 40,  '84%', { fontSize: '20px', fill: '#000' });
+						game.add.text(600, 80,  '84%', { fontSize: '20px', fill: '#000' });
+						game.add.text(600, 120, '84%', { fontSize: '20px', fill: '#000' });
+						game.add.text(600, 160, '84%', { fontSize: '20px', fill: '#000' });
+						game.add.text(600, 200, '84%', { fontSize: '20px', fill: '#000' });
+						game.add.text(600, 240, '84%', { fontSize: '20px', fill: '#000' });
+						game.add.text(600, 280, '84%', { fontSize: '20px', fill: '#000' });
+						game.add.text(600, 320, '84%', { fontSize: '20px', fill: '#000' });
+						game.add.text(600, 360, '84%', { fontSize: '20px', fill: '#000' });
+					
+						game.add.text(30, 400, 'Если вам кажется, что подсчет очков забагован, или вас просто наглым образом нае@#!,',{ fontSize: '18px', fill: '#000' });
+						game.add.text(60, 440, 'присылайте багрепорты на адрес sportloto@na.derevnuy.dedushke.ru', { fontSize: '18px', fill: '#000' });
+						game.add.text(160, 480, 'ЦИК с радостью вас пошлет на#@!, ибо е#али мы вас в рот!', { fontSize: '18px', fill: '#fff' }); 
+						game.add.text(160, 480, 'ЦИК с радостью вам ответит, ибо честность превыше всего', { fontSize: '18px', fill: '#000' });
+						/*sarcasm=game.add.sprite(450,480,'sarcasm');
+						sarcasm.scale.setTo(0.15,0.15);*/
+						game.add.text(350, 520, 'И помните:', { fontSize: '20px', fill: '#000' });
+						game.add.text(180, 550, '#нам_не_нужен_президент', { fontSize: '32px', fill: '#f00' });
+					}
+					game.physics.arcade.collide(player, platforms);
+					game.physics.arcade.overlap(player, checks, vote, null, this);
+					game.physics.arcade.overlap(bots, checks, vote, null, this);
+					game.physics.arcade.overlap(platforms, checks, vote, null, this);
+					
+					player.body.velocity.x = 0;
+					if (cursors.left.isDown) {
+							player.body.velocity.x = -600;
+					} else if (cursors.right.isDown) {
+							player.body.velocity.x = 600;
+					} 
+					
+					
+				}
+				function vote(unusedCausePitunWinsAnyway,checkObject){
+					checkObject.kill();
+				}
+
+    };
+
+    </script>
+
+    </body>
+</html>
